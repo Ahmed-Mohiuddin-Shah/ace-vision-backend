@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /
 
 # Install uv (fast Python package manager)
 RUN pip install uv
