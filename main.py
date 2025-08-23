@@ -1,11 +1,19 @@
-from fastapi import FastAPI, UploadFile, File
+import time
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks
 from fastapi.responses import FileResponse
-import shutil, os, json
+import shutil, os, json, uuid, threading
 from fastapi.middleware.cors import CORSMiddleware
 
+from apply_yolo.main import apply_YOLO
+from court_detection.main import GetCornerPoints
+from generate_heatmap.main import produce_heatmaps
 from pipeline_analysis import ProcessVideo
 
+
 app = FastAPI()
+
+# global progress store
+progress_store = {}
 
 # Allow Next.js frontend (localhost:3000) to access
 origins = ["*"]
@@ -58,22 +66,33 @@ async def get_player_info():
 
 @app.post("/upload-video")
 async def upload_video(file: UploadFile = File(...)):
+    global progress_store
     video_path = f"videos/{file.filename}"
     os.makedirs("videos", exist_ok=True)
     with open(video_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    ProcessVideo(video_path)
+    # Create unique task id
+    task_id = str(uuid.uuid4())
+    progress_store[task_id] = {
+        "progress": 0,
+        "status": "starting",
+        "start_time": time.time(),
+        "eta": None,
+    }
 
-    return {"status": "uploaded"}
+    # Run process in background
+    thread = threading.Thread(
+        target=ProcessVideo, args=(video_path, task_id, progress_store)
+    )
+    thread.start()
+
+    return {"status": "uploaded", "task_id": task_id}
 
 
-@app.get("/progress")
-async def get_progress():
-    global progress
-    # Replace with actual pipeline progress value
-    progress = min(progress + 10, 100)
-    return {"value": progress}
+@app.get("/progress/{task_id}")
+def get_progress(task_id: str):
+    return progress_store.get(task_id, {"progress": 0, "status": "unknown"})
 
 
 @app.get("/results/{filename}")

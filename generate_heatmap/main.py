@@ -7,10 +7,17 @@ from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 import cv2
 
+from helpers import update_progress
+
 bw_method = 0.5
 
 
-def produce_heatmaps(playerTop, playerBottom, bw_method=0.5):
+def produce_heatmaps(
+    playerTop, playerBottom, progress_store, bw_method=0.5, task_id=None
+):
+
+    total_frames = len(playerTop) + len(playerBottom)
+    processed = 0
 
     os.makedirs("results", exist_ok=True)
 
@@ -30,11 +37,24 @@ def produce_heatmaps(playerTop, playerBottom, bw_method=0.5):
     #     playerBottom = json.load(f)
 
     for i in range(len(playerTop)):
+        processed += 1
+        if task_id:
+            percent = 70 + int(20 * (processed / total_frames))
+            update_progress(
+                progress_store, task_id, percent, f"Heatmap {processed}/{total_frames}"
+            )
         x = int(playerTop[i][0])
         y = int(playerTop[i][1])
         dataT[y][x] = 1
 
     for i in range(len(playerBottom)):
+        processed += 1
+        if task_id:
+            percent = 70 + int(20 * (processed / total_frames))
+            update_progress(
+                progress_store, task_id, percent, f"Heatmap {processed}/{total_frames}"
+            )
+
         x = int(playerBottom[i][0])
         y = int(playerBottom[i][1])
         dataB[y][x] = 1
@@ -89,6 +109,11 @@ def produce_heatmaps(playerTop, playerBottom, bw_method=0.5):
 
         return image2
 
+    if task_id:
+        percent = 94
+        update_progress(
+            progress_store, task_id, percent, f"Heatmap {processed}/{total_frames}"
+        )
     print("Moving towards vectorization...  TOP")
 
     image3 = cv2.imread("generate_heatmap/minimap.png")
@@ -120,6 +145,11 @@ def produce_heatmaps(playerTop, playerBottom, bw_method=0.5):
 
         return image2
 
+    if task_id:
+        percent = 99
+        update_progress(
+            progress_store, task_id, percent, f"Heatmap {processed}/{total_frames}"
+        )
     print("Moving towards vectorization...  TOP")
 
     image3 = cv2.imread("generate_heatmap/minimap.png")

@@ -4,6 +4,8 @@ import json
 import scipy
 from scipy.interpolate import CubicSpline
 
+from helpers import update_progress
+
 # read in the data from the json files
 # with open('coordinates.json') as f:
 #     data = json.load(f)
@@ -180,17 +182,15 @@ playerBottom = []
 
 
 def map_to_minimap(pt, M):
-    print("starting")
 
     player_coordinates = np.array([[pt[0], pt[1], 1]], dtype=np.float32)
     mapped_coordinates = np.dot(M, player_coordinates.T).T
     mapped_x, mapped_y = mapped_coordinates[0, :2] / mapped_coordinates[0, 2]
 
-    print("ending")
     return (mapped_x, mapped_y)
 
 
-def apply_YOLO(video_input_path, dictionary):
+def apply_YOLO(video_input_path, dictionary, progress_store, task_id=None):
 
     src_points = np.float32(
         [
@@ -211,31 +211,12 @@ def apply_YOLO(video_input_path, dictionary):
     )
 
     M = cv2.getPerspectiveTransform(src_points, dst_points)
-    
+
     results = apply_yolo(video_input_path)
 
-    # x_smoothed, y_smoothed = Interpolate_points(x_coordinates, y_coordinates)
-
-    # print("len(x_coordinates): ", len(x_coordinates), "len(y_coordinates): ", len(y_coordinates))
-    # print("len(x_smoothed): ", len(x_smoothed), "len(y_smoothed): ", len(y_smoothed))
-
-    # return
-
-    # x_sharp_coordinates, y_sharp_coordinates = get_sharp_points(x_smoothed, y_smoothed)
-
-    # combined_sharp_coordinates = list(zip(x_sharp_coordinates, y_sharp_coordinates))
-
-    # for i in range(start_idx):
-    #     x_smoothed = np.insert(x_smoothed, 0, None)
-    #     y_smoothed = np.insert(y_smoothed, 0, None)
-    #     # x_smoothed.insert(0, None)
-    #     # y_smoothed.insert(0, None)
-
-    # generate_ball_plottings(1920, 1080, x_smoothed, y_smoothed, "smoothed_0.png")
-
-    # combined_smoothed_coordinates = list(zip(x_smoothed, y_smoothed))
-
     cap = cv2.VideoCapture(video_input_path)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    processed_frames = 0
 
     if not cap.isOpened():
         print("Error: Could not open video.")
@@ -248,30 +229,9 @@ def apply_YOLO(video_input_path, dictionary):
         int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
     )
 
-    # Define the codec and create VideoWriter object
-    # fourcc = cv2.VideoWriter_fourcc(*'XVID')  # You can change the codec as needed
-    # output_video_path = 'output.avi'
-    # out = cv2.VideoWriter(output_video_path, fourcc, fps, frame_size)
-
-    # court_frame = cv2.imread("copied_frame.png")
-
-    # out_minimap = cv2.VideoWriter('minimap.avi', fourcc, fps, (width_court_frame, height_court_frame))
-
     court_frame = cv2.imread("apply_yolo/minimap.png")
 
     transformed_sharp_coordinates = []
-
-    # for coord in combined_sharp_coordinates:
-    #     new_coord = map_to_minimap(coord)
-    #     transformed_sharp_coordinates.append(new_coord)
-
-    #     cv2.circle(court_frame, (int(new_coord[0]), int(new_coord[1])), 10, (0, 255, 0), -1)
-
-    # cv2.imwrite("minimap.png", court_frame)
-
-    # save transformed_sharp_coordinatesto a json file
-    # with open('transformed_sharp_coordinates.json', 'w') as f:
-    #     json.dump(transformed_sharp_coordinates, f)
 
     def midpoint_of_bottom_line(topLeft, bottomRight):
         x1, y1 = topLeft
@@ -291,7 +251,6 @@ def apply_YOLO(video_input_path, dictionary):
         coords = get_yolo_coords(
             r, frame_height=frame_size[1], frame_width=frame_size[0]
         )
-        print("coords: ", coords)
 
         try:
             # get midpoint of bottomLeft and bottomRight coordinates for both players
@@ -329,6 +288,18 @@ def apply_YOLO(video_input_path, dictionary):
         # Break the loop if 'q' is pressed
         if cv2.waitKey(0) & 0xFF == ord("q"):
             break
+
+        if task_id:
+            # Calculate % progress between 40–70%
+            percent = 40 + int(30 * (processed_frames / total_frames))
+            update_progress(
+                progress_store,
+                task_id,
+                percent,
+                f"YOLO {processed_frames}/{total_frames}",
+            )
+
+        processed_frames = processed_frames + 1
 
     if court_frame is None or court_frame.size == 0:
         print("No frame captured or frame is empty")
