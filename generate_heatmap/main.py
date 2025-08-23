@@ -7,7 +7,7 @@ from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 import cv2
 
-from helpers import update_progress
+from helpers import save_frame_pil, update_progress
 
 bw_method = 0.5
 
@@ -125,7 +125,7 @@ def produce_heatmaps(
             if any(image3[i][j]) == 1:
                 image2[i][j] = (255, 255, 255)
 
-    cv2.imwrite("results/FINAL_heatmapT.png", image2)
+    save_frame_pil(image2, f"results/FINAL_heatmapT_{task_id}.png")
 
     # for bottom player
     image2 = cv2.imread("generate_heatmap/minimap.png")
@@ -161,7 +161,7 @@ def produce_heatmaps(
             if any(image3[i][j]) == 1:
                 image2[i][j] = (255, 255, 255)
 
-    cv2.imwrite("results/FINAL_heatmapB.png", image2)
+    save_frame_pil(image2, f"results/FINAL_heatmapB_{task_id}.png")
 
     # combining both images
     ImageT = cv2.imread("results/FINAL_heatmapT.png")
@@ -171,6 +171,6 @@ def produce_heatmaps(
     # combining Top half of ImageT and bottom half of ImageB
     ImageT[no_of_rows // 2 :, :, :] = ImageB[no_of_rows // 2 :, :, :]
 
-    cv2.imwrite("results/FINAL_heatmap.png", ImageT)
+    save_frame_pil(ImageT, f"results/FINAL_heatmap_{task_id}.png")
 
     return ImageT

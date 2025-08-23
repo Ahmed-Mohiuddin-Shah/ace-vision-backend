@@ -89,6 +89,7 @@ def main():
             prev = coordinates
 
     cv2.imwrite("output_image.png", black_image)
+    
 
 def produce_ball_coordinates(video_path):
     ball_detector = BallDetector('ball_detection/Weights.pth', out_channels=2)

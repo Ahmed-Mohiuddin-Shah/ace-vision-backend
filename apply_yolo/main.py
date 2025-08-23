@@ -4,7 +4,7 @@ import json
 import scipy
 from scipy.interpolate import CubicSpline
 
-from helpers import update_progress
+from helpers import save_frame_pil, update_progress
 
 # read in the data from the json files
 # with open('coordinates.json') as f:
@@ -304,7 +304,7 @@ def apply_YOLO(video_input_path, dictionary, progress_store, task_id=None):
     if court_frame is None or court_frame.size == 0:
         print("No frame captured or frame is empty")
     else:
-        cv2.imwrite("results/minimap_heatmap.png", court_frame)
+        save_frame_pil(court_frame, f"results/minimap_heatmap_{task_id}.png")
 
     cap.release()
     # out.release()

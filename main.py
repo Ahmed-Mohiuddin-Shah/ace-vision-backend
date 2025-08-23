@@ -15,6 +15,15 @@ app = FastAPI()
 # global progress store
 progress_store = {}
 
+# check if progress_store.json exists, if yes load it
+if os.path.exists("progress_store.json"):
+    with open("progress_store.json", "r") as f:
+        if os.stat("progress_store.json").st_size != 0:
+            progress_store = json.load(f)
+else:
+    with open("progress_store.json", "w") as f:
+        json.dump(progress_store, f)
+
 # Allow Next.js frontend (localhost:3000) to access
 origins = ["*"]
 
@@ -80,6 +89,10 @@ async def upload_video(file: UploadFile = File(...)):
         "start_time": time.time(),
         "eta": None,
     }
+    
+    # save progress_store to json file
+    with open("progress_store.json", "w") as f:
+        json.dump(progress_store, f)
 
     # Run process in background
     thread = threading.Thread(
@@ -101,3 +114,33 @@ async def get_result(filename: str):
     if os.path.exists(file_path):
         return FileResponse(file_path)
     return {"error": "File not found"}
+
+
+@app.get("/results")
+async def get_results():
+    # get task_ids from progress_store
+    task_ids = list(progress_store.keys())
+    results = {}
+    for task_id in task_ids:
+        # get progress for each task_id if running else get the result file
+        if progress_store[task_id]["progress"] < 100:
+            results[task_id] = {
+                "progress": progress_store[task_id]["progress"],
+                "status": progress_store[task_id]["status"],
+            }
+        else:
+            # get the result file
+            result_file = f"results/minimap_heatmap_{task_id}.png"
+            if os.path.exists(result_file):
+                results[task_id] = {
+                    "progress": 100,
+                    "status": "completed",
+                    "result_file": result_file,
+                }
+            else:
+                results[task_id] = {
+                    "progress": 100,
+                    "status": "completed",
+                    "result_file": None,
+                }
+    return results

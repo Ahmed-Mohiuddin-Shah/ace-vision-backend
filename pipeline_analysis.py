@@ -12,7 +12,7 @@ from helpers import update_progress
 def ProcessVideo(video_path, task_id, progress_store):
     try:
         update_progress(progress_store, task_id, 10, "Finding Corners")
-        corner_points = GetCornerPoints(video_path)
+        corner_points = GetCornerPoints(video_path, task_id)
 
         update_progress(progress_store, task_id, 40, "Runnning YOLO")
         apply_YOLO(video_path, corner_points, progress_store, task_id)

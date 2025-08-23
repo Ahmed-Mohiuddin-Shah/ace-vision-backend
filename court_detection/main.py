@@ -1,8 +1,9 @@
-
 from court_detection.detection import generate_corner_points, refine_corner_points, get_line_coordinates
 import cv2
 import numpy as np
 import time
+
+from helpers import save_frame_pil
 
 
 input_path = 'frame.jpg'
@@ -49,7 +50,7 @@ def main():
 
     print("Overall Time taken: ", time.time() - start_time)
 
-def GetCornerPoints(input_path_video):
+def GetCornerPoints(input_path_video, task_id=None):
     # get a random frame from video
 
     cap = cv2.VideoCapture(input_path_video)
@@ -66,7 +67,7 @@ def GetCornerPoints(input_path_video):
 
     print("FINAL DICTIONARY : ", dictionary_refined)
 
-    #plot the corner points on the image
+    # plot the corner points on the image
     image1 = np.copy(frame)
 
     cv2.circle(image1, dictionary['topLeft'], 5, (0, 255, 0), -1)
@@ -74,7 +75,7 @@ def GetCornerPoints(input_path_video):
     cv2.circle(image1, dictionary['bottomLeft'], 5, (0, 255, 0), -1)
     cv2.circle(image1, dictionary['bottomRight'], 5, (0, 255, 0), -1)
 
-    cv2.imwrite("results/corner_points.jpg", image1)
+    save_frame_pil(image1, f"results/corner_points_{task_id}.jpg")
 
     return dictionary
 
