@@ -1,4 +1,5 @@
 import json
+import os
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 import numpy as np
@@ -10,6 +11,8 @@ bw_method = 0.5
 
 
 def produce_heatmaps(playerTop, playerBottom, bw_method=0.5):
+
+    os.makedirs("results", exist_ok=True)
 
     image = cv2.imread("generate_heatmap/minimap.png")
 
