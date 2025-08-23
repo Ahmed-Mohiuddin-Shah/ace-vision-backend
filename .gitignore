@@ -16,5 +16,3 @@ videos/
 player_info.json
 playerBottom.json
 playerTop.json
-
-# command to remove permanently deleted files: git rm --cached <file>
