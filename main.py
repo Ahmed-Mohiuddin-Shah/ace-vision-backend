@@ -89,7 +89,12 @@ async def upload_video(file: UploadFile = File(...)):
         "start_time": time.time(),
         "eta": None,
     }
-    
+
+    # rename the video to task_id.*
+    new_video_path = f"videos/{task_id}.{file.filename.split('.')[-1]}"
+    os.rename(video_path, new_video_path)
+    video_path = new_video_path
+
     # save progress_store to json file
     with open("progress_store.json", "w") as f:
         json.dump(progress_store, f)
