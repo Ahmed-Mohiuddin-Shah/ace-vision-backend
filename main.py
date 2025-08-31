@@ -132,6 +132,7 @@ async def get_results():
             results[task_id] = {
                 "progress": progress_store[task_id]["progress"],
                 "status": progress_store[task_id]["status"],
+                "eta": progress_store[task_id].get("eta", None),
             }
         else:
             # get the result file
@@ -141,11 +142,13 @@ async def get_results():
                     "progress": 100,
                     "status": "completed",
                     "result_file": result_file,
+                    "eta": progress_store[task_id].get("eta", None),
                 }
             else:
                 results[task_id] = {
                     "progress": 100,
                     "status": "completed",
                     "result_file": None,
+                    "eta": progress_store[task_id].get("eta", None),
                 }
     return results

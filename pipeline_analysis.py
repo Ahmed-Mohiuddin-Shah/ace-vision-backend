@@ -5,6 +5,7 @@ from apply_yolo.main import apply_YOLO
 from apply_yolo.test import get_all_yolo_coords
 from generate_heatmap.main import produce_heatmaps
 import json
+import traceback
 
 from helpers import update_progress
 
@@ -32,6 +33,7 @@ def ProcessVideo(video_path, task_id, progress_store):
 
         update_progress(progress_store, task_id, 100, "Done")
     except Exception as e:
+        traceback.print_exc()
         update_progress(progress_store, task_id, -1, f"error: {str(e)}")
 
 

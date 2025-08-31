@@ -29,13 +29,6 @@ def produce_heatmaps(
     dataT = np.zeros((no_of_rows, no_of_cols))
     dataB = np.zeros((no_of_rows, no_of_cols))
 
-    # # import playerTop and playerBottom and mark those coordinates as 1 in data
-    # with open("playerTop.json", "r") as f:
-    #     playerTop = json.load(f)
-
-    # with open("playerBottom.json", "r") as f:
-    #     playerBottom = json.load(f)
-
     for i in range(len(playerTop)):
         processed += 1
         if task_id:

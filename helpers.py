@@ -22,15 +22,19 @@ def update_progress(progress_store, task_id, percent, status):
     elapsed = time.time() - start_time
 
     if percent > 0:
-        eta = (elapsed / percent) * (100 - percent)
+        eta_seconds = (elapsed / percent) * (100 - percent)
+        eta_time = time.time() + eta_seconds
+        eta_iso = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(eta_time))
     else:
-        eta = None
+        eta_seconds = None
+        eta_iso = None
 
     progress_store[task_id] = {
         "progress": percent,
         "status": status,
         "start_time": start_time,
-        "eta": round(eta, 2) if eta else None,
+        "eta_seconds": round(eta_seconds, 2) if eta_seconds else None,
+        "eta": eta_iso,
     }
     # update progress_store.json file
     with open("progress_store.json", "w") as f:
