@@ -1,0 +1,3 @@
+[submodule "court_detection/tennis_court_detector"]
+	path = court_detection/tennis_court_detector
+	url = https://github.com/yastrebksv/TennisCourtDetector.git
